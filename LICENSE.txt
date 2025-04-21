@@ -1,0 +1,36 @@
+Custom Shared-Profit License (CSPL) v1.0
+
+Copyright (c) 2025 Alejandro Reinoso
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction for non-commercial use, including without limitation
+the rights to use, copy, modify, merge, publish, and distribute copies of the Software,
+subject to the following conditions:
+
+1. **Attribution**
+   You must retain the above copyright notice and this license in all copies
+   or substantial portions of the Software.
+
+2. **Commercial Use & Revenue Sharing**
+   Commercial use of this Software is permitted only under the condition that
+   50% of any **gross revenue** or **benefit** obtained from the use, distribution,
+   sublicensing, or sale of the Software or any derivative works is shared with
+   the original author, **Alejandro Reinoso**.
+
+   Revenue sharing must occur within 30 days of revenue generation and be
+   accompanied by a report of use. Contact: https://alejandroreinoso.com/contacto
+
+3. **No Warranty**
+   THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+   PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES
+   OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---
+
+For clarification, “commercial use” includes but is not limited to:
+- Selling the Software or derivative products
+- Using the Software in SaaS or client-facing platforms
+- Distributing the Software as part of a paid service

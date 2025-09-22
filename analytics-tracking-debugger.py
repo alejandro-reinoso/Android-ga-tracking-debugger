@@ -1,14 +1,16 @@
-import sys, os
-import json
+import sys
 import subprocess
 import threading
 import queue
 import tkinter as tk
 from tkinter import scrolledtext, ttk, messagebox, Menu
-import re
 import webbrowser
 from src.i18n import load_translations, set_language, _
 from src.utils import resource_path
+from src.log_parser import parse_logging_event_line, parse_user_property_line, parse_consent_line
+from src.config_manager import load_config, save_config
+from src.adb_manager import check_adb_installed, check_device_connected, LogcatManager, AdbError
+
 
 
 # Solo definimos el flag una vez, es 0 en Linux/Mac
@@ -76,11 +78,10 @@ def on_language_change(new_lang):
 # -----------------------------------------------------
 # Global Variables / Data Structures
 # -----------------------------------------------------
-CONFIG_FILE = resource_path("config.json")
 
-logcat_process = None
-stop_thread = False
 log_queue = queue.Queue()
+logcat_manager = None
+
 
 events_data = []
 user_properties = {}
@@ -97,60 +98,18 @@ current_match_index = -1
 # For consent table: if another log with same datetime arrives, it will replace the old one
 consent_entries = {}  # dict: datetime => item_id of the Treeview
 
-# -----------------------------------------------------
-# Configuration Logic
-# -----------------------------------------------------
-def load_config():
-    """Reads the 'config.json' file and returns its data as a dictionary. 
-    Returns empty dict if missing or corrupted."""
-    if os.path.exists(CONFIG_FILE):
-        try:
-            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                return data
-        except:
-            return {}
-    else:
-        return {}
-
-
-def save_config(config):
-    """Saves the given config dictionary into 'config.json'."""
-    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-        json.dump(config, f, ensure_ascii=False, indent=2)
-
 
 # -----------------------------------------------------
 # ADB Reading Thread
 # -----------------------------------------------------
-def reader_thread():
-    """Reads lines from logcat stdout and pushes them into a queue while ADB is running."""
-    global stop_thread, logcat_process
-    while not stop_thread and logcat_process and logcat_process.poll() is None:
-        line = logcat_process.stdout.readline()
-        if not line:
-            break
-        line = line.rstrip('\n')
-        log_queue.put(line)
 
 
-def stderr_reader_thread():
-    """Reads lines from logcat stderr and detects issues like multiple connected devices."""
-    global logcat_process, stop_thread
-    while not stop_thread and logcat_process and logcat_process.poll() is None:
-        line_err = logcat_process.stderr.readline()
-        if not line_err:
-            break
-        line_err = line_err.strip()
-
-        # React if "more than one device/emulator" appears
-        if "more than one device/emulator" in line_err.lower():
-            messagebox.showerror(_("error.several_devices_title"),
-                _("error.several_devices_description")
-            )
-            # Stop logging on error:
-            stop_logging()
-            return
+def handle_adb_error(error_type):
+    """Función que será llamada por el LogcatManager en caso de error."""
+    if error_type == AdbError.MULTIPLE_DEVICES:
+        messagebox.showerror(_("error.several_devices_title"),
+                             _("error.several_devices_description"))
+    stop_logging() # Detenemos el log desde el hilo principal de la UI
 
 
 def check_log_queue():
@@ -191,18 +150,7 @@ def check_log_queue():
     root.after(100, check_log_queue)
 
 
-def check_adb_installed():
-    """
-    Checks whether ADB is installed by attempting to run 'adb version'.
-    Returns: True if it can be executed, False otherwise.
-    """
-    try:
-        subprocess.check_output(["adb", "version"], 
-            stderr=subprocess.STDOUT,
-            creationflags=CREATE_NO_WINDOW)
-        return True
-    except (FileNotFoundError, subprocess.CalledProcessError):
-        return False
+
 
 
 def show_adb_install_dialog():
@@ -239,37 +187,6 @@ def show_adb_install_dialog():
 # Check Connected Devices
 # -----------------------------------------------------
 
-def check_device_connected():
-    """
-    Runs 'adb devices' and determines if at least one device or emulator is connected.
-    """
-    try:
-        result = subprocess.check_output(
-            ["adb", "devices"], stderr=subprocess.STDOUT, universal_newlines=True,
-                   creationflags=CREATE_NO_WINDOW)
-        lines = result.strip().split('\n')
-
-        # The first line is usually: "List of devices attached"
-        # Starting from the second, each line represents a device (id + state).
-        if len(lines) > 1:
-            # We filter out empty lines or those that begin with "* daemon"
-            device_lines = [
-                l for l in lines[1:]
-                if l.strip() != '' and not l.startswith('* daemon')
-            ]
-
-            for dev in device_lines:
-                parts = dev.split()
-                # parts[0] = device ID, parts[1] = state
-                if len(parts) >= 2:
-                    state = parts[1].lower()
-                    if state == "device":
-                        return True
-        return False
-    except (FileNotFoundError, subprocess.CalledProcessError):
-        # If ADB is not installed or fails
-        return False
-
 
 def show_no_device_dialog():
     """
@@ -298,7 +215,7 @@ def show_no_device_dialog():
 # -----------------------------------------------------
 def start_logging():
     """Initializes ADB logging, starts reading threads, and prepares UI."""
-    global stop_thread, logcat_process
+    global logcat_manager
 
     # We check if ADB is installed
     if not check_adb_installed():
@@ -310,43 +227,21 @@ def start_logging():
         show_no_device_dialog()
         return
 
-    stop_thread = False
-    subprocess.run(["adb", "shell", "setprop", "log.tag.FA", "VERBOSE"],
-                   creationflags=CREATE_NO_WINDOW)
-    subprocess.run(["adb", "shell", "setprop", "log.tag.FA-SVC", "VERBOSE"],
-                   creationflags=CREATE_NO_WINDOW)
-    subprocess.run(["adb", "logcat", "-c"],
-                   creationflags=CREATE_NO_WINDOW)  # Opcional (limpia buffer)
+    # Creamos e iniciamos el manager
+    logcat_manager = LogcatManager(log_queue, handle_adb_error)
+    logcat_manager.start()
 
-    logcat_process = subprocess.Popen(
-        ["adb", "logcat", "-v", "time", "-s", "FA", "FA-SVC"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True,
-        creationflags=CREATE_NO_WINDOW
-    )
-
-    # STDOUT reader thread
-    t_stdout = threading.Thread(target=reader_thread, daemon=True)
-    t_stdout .start()
-
-    # STDERR reader thread
-    t_stderr = threading.Thread(target=stderr_reader_thread, daemon=True)
-    t_stderr.start()
-
-    # Start queue check loop
+    # Iniciamos el bucle que procesa la cola
     check_log_queue()
-
     text_area.insert(tk.END, "\n--- Start log ---\n")
 
 
 def stop_logging():
     """Terminates the logcat process and stops logging thread."""
-    global logcat_process, stop_thread
-    stop_thread = True
-    if logcat_process and logcat_process.poll() is None:
-        logcat_process.terminate()
-        logcat_process = None
+    global logcat_manager
+    if logcat_manager:
+        logcat_manager.stop()
+        logcat_manager = None
     text_area.insert(tk.END, "\n--- Stop log ---\n")
     text_area.see(tk.END)
 
@@ -375,74 +270,6 @@ def clear_all():
     for it in consent_tree.get_children():
         consent_tree.delete(it)
     consent_entries.clear()
-
-# -----------------------------------------------------
-# Log Line Parsers
-# -----------------------------------------------------
-
-
-def parse_logging_event_line(line):
-    """Parses a logging event line for event name, datetime and parameters."""
-    datetime_str = line[:18].strip()
-    name_match = re.search(r"name=([^,]+)", line)
-    params_match = re.search(r"params=Bundle\[\{(.*)\}\]", line)
-    if not name_match or not params_match:
-        return None
-    event_name = name_match.group(1).strip()
-    params_str = params_match.group(1).strip()
-
-    params_dict = {}
-    raw_pairs = params_str.split(',')
-    for pair in raw_pairs:
-        pair = pair.strip()
-        if '=' in pair:
-            k, v = pair.split('=', 1)
-            params_dict[k.strip()] = v.strip()
-
-    return {
-        "datetime": datetime_str,
-        "name": event_name,
-        "params": params_dict
-    }
-
-
-def parse_user_property_line(line):
-    """Parses a line for user property settings."""
-    pat = r"Setting user property:\s+([^,]+),\s+(.*)"
-    m = re.search(pat, line)
-    if not m:
-        # pat_fe = r"Setting user property(FE):\s+([^,]+),\s+(.*)"
-        pat_fe = r"Setting user property\s*\(FE\):\s+([^,]+),\s+(.*)"
-        m = re.search(pat_fe, line)
-        if not m:
-            return None
-
-    return {
-        "name": m.group(1).strip(),
-        "value": m.group(2).strip()
-    }
-
-
-def parse_consent_line(line):
-    """Parses a line containing consent data into a dictionary format."""
-    datetime_str = line[:18].strip()
-    found = re.findall(r'(\w+)=(\w+)', line)
-    cdict = {
-        "datetime": datetime_str,
-        "ad_storage": None,
-        "analytics_storage": None,
-        "ad_user_data": None,
-        "ad_personalization": None,
-    }
-    for (k, v) in found:
-        if k in cdict:  # ad_storage, analytics_storage, ad_user_data, ad_personalization
-            cdict[k] = v
-
-    if (cdict["ad_storage"] is None
-        and cdict["analytics_storage"] is None
-            and cdict["ad_user_data"] is None):
-        return None
-    return cdict
 
 
 def fill_missing_consent_fields(c):

@@ -7,58 +7,18 @@ import tkinter as tk
 from tkinter import scrolledtext, ttk, messagebox, Menu
 import re
 import webbrowser
+from src.i18n import load_translations, set_language, _
+from src.utils import resource_path
 
 
 # Solo definimos el flag una vez, es 0 en Linux/Mac
 CREATE_NO_WINDOW = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
 
 
-def resource_path(relative_path):
-    """Returns the absolute path to the resource, whether it works in dev or in the .exe."""
-    if hasattr(sys, "_MEIPASS"):
-        return os.path.join(sys._MEIPASS, relative_path)
-    return os.path.join(os.path.abspath("."), relative_path)
-
-
-# -----------------------------------------------------
-# i18n - Translation Handling
-# -----------------------------------------------------
-TRANSLATIONS = {}
-CURRENT_LANG = "en"  # Default fallback language
-
-
-def load_translations():
-    """Loads translations from the 'locales.json' file."""
-    global TRANSLATIONS
-    path_locales = resource_path("locales.json")
-
-    if not os.path.exists(path_locales):
-        print("'locales.json' not found; hardcoded literals will be used.")
-        TRANSLATIONS = {}
-        return
-
-    with open(path_locales, "r", encoding="utf-8") as f:
-        TRANSLATIONS = json.load(f)
-
-
-def set_language(lang):
-    """Changes the current language (e.g., 'es', 'en', etc.)."""
-    global CURRENT_LANG
-    CURRENT_LANG = lang
-
-
-def _(key):
-    """
-    Returns the translated text based on the key and current language.
-    If not found, returns the key itself as fallback.
-    """
-    return TRANSLATIONS.get(CURRENT_LANG, {}).get(key, key)
-
 # -----------------------------------------------------
 # Update UI Texts According to Current Language
 # -----------------------------------------------------
 
-#inicio pendiente migrar
 def refresh_ui_texts():
     """
     Refresh all UI texts based on current language selection.
@@ -112,14 +72,12 @@ def on_language_change(new_lang):
     refresh_ui_texts()
     config_data["language"] = new_lang
     save_config(config_data)
-#fin pendiente migrar
 
 # -----------------------------------------------------
 # Global Variables / Data Structures
 # -----------------------------------------------------
 CONFIG_FILE = resource_path("config.json")
 
-#inicio pendiente migrar
 logcat_process = None
 stop_thread = False
 log_queue = queue.Queue()
@@ -138,7 +96,6 @@ current_match_index = -1
 
 # For consent table: if another log with same datetime arrives, it will replace the old one
 consent_entries = {}  # dict: datetime => item_id of the Treeview
-#fin pendiente migrar
 
 # -----------------------------------------------------
 # Configuration Logic
@@ -699,7 +656,7 @@ set_language(default_lang_code)
 
 root = tk.Tk()
 root.title("Analytics Tracking Debugger Android (Alejandro Reinoso)")
-root.iconbitmap(resource_path("logo-alejandro-reinoso.ico"))
+root.iconbitmap(resource_path("./assets/logo-alejandro-reinoso.ico"))
 
 main_paned = tk.PanedWindow(
     root, orient=tk.VERTICAL, sashwidth=8, sashrelief="raised")

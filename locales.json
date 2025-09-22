@@ -43,7 +43,14 @@
       "consent.analytics_storage": "analytics_storage",
       "consent.ad_user_data": "ad_user_data",
       "consent.ad_personalization": "ad_personalization",
-      "events.title": "Eventos Capturados"
+      "events.title": "Eventos Capturados",
+      "error.no_connected_device": "Dispositivo o emulador no conectado.\nConecte un dispositivo físico o ejecute el emulador antes de continuar.",
+      "close": "Cerrar",
+      "error.adb_not_found": "No se encontró ADB en su sistema.\nDebe instalarlo para poder utilizar esta herramienta.\nConsulte el siguiente enlace de instalación:",
+      "download_adb": "Descargar ADB (Google)",
+      "error.device_not_found": "Dispositivo no encontrado",
+      "error.several_devices_title": "ADB: varios dispositivos",
+      "error.several_devices_description": "Se ha detectado más de un dispositivo/emulador conectado.\nPor favor, mantén conectado solo el que deseas depurar."
     },
   
     "en": {
@@ -90,7 +97,14 @@
       "consent.analytics_storage": "analytics_storage",
       "consent.ad_user_data": "ad_user_data",
       "consent.ad_personalization": "ad_personalization",
-      "events.title": "Captured Events"
+      "events.title": "Captured Events",
+      "error.no_connected_device": "No connected device or emulator found.\nConnect a physical device or launch an emulator before continuing.",
+      "close": "Close",
+      "error.adb_not_found": "ADB was not found on your system..\nYou must install it to be able to use this tool.\nCheck the following installation link:",
+      "download_adb": "Download ADB (Google)",
+      "error.device_not_found": "Device not found",
+      "error.several_devices_title": "ADB: Multiple Devices",
+      "error.several_devices_description": "More than one device/emulator has been detected connected.\nPlease keep only the one you want to debug connected."
     }
   
   

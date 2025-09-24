@@ -1,3 +1,9 @@
+# Android GA Tracking Debugger
+# Copyright (c) 2025 Alejandro Reinoso
+#
+# This software is licensed under the Custom Shared-Profit License (CSPL) v1.0.
+# See the LICENSE.txt file for details.
+
 import sys
 import os
 

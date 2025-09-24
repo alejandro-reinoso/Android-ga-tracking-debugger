@@ -1,4 +1,9 @@
-# src/model.py
+# Android GA Tracking Debugger
+# Copyright (c) 2025 Alejandro Reinoso
+#
+# This software is licensed under the Custom Shared-Profit License (CSPL) v1.0.
+# See the LICENSE.txt file for details.
+
 '''
 model.py manage the status of the app
 '''
@@ -36,7 +41,6 @@ class DataModel:
         """We use 'non_personalized_ads(_npa)': 1 => denied, 0 => granted. 
         If not available, use the previous value or ad_storage"""
         # TODO: improve this function.
-        # print("revisar non_personalized_ads")
         npa_key = None
         for k in self.user_properties:
             if "non_personalized_ads" in k:

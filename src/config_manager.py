@@ -1,8 +1,15 @@
+# Android GA Tracking Debugger
+# Copyright (c) 2025 Alejandro Reinoso
+#
+# This software is licensed under the Custom Shared-Profit License (CSPL) v1.0.
+# See the LICENSE.txt file for details.
+
 import os
 import json
-from src.utils import resource_path # <-- 1. Importar la utilidad
+from src.utils import resource_path
 
-CONFIG_FILE = resource_path("config.json") 
+CONFIG_FILE = resource_path("config.json")
+
 
 def load_config():
     """Reads the 'config.json' file and returns its data as a dictionary. 

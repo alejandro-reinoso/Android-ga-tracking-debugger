@@ -1,3 +1,9 @@
+# Android GA Tracking Debugger
+# Copyright (c) 2025 Alejandro Reinoso
+#
+# This software is licensed under the Custom Shared-Profit License (CSPL) v1.0.
+# See the LICENSE.txt file for details.
+
 import tkinter as tk
 from tkinter import messagebox
 import webbrowser
@@ -9,24 +15,26 @@ from src.adb_manager import check_adb_installed, check_device_connected, LogcatM
 from src.view import View
 from src.model import DataModel
 
+
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("Analytics Tracking Debugger Android (Alejandro Reinoso)")
-        self.root.iconbitmap(resource_path("./assets/logo-alejandro-reinoso.ico"))
+        self.root.title(
+            "Analytics Tracking Debugger Android (Alejandro Reinoso)")
+        self.root.iconbitmap(resource_path(
+            "./assets/logo-alejandro-reinoso.ico"))
 
         self.model = DataModel()
         self.logcat_manager = None
 
-        # --- Cargar configuración e i18n ---
+        # --- Load configuration and i18n ---
         self.config_data = load_config()
         default_lang_code = self.config_data.get("language", "en")
         set_language(default_lang_code)
 
-        # --- Construir la UI ---
+        # --- Build the UI ---
         self.view = View(self.root, self)
-        self.refresh_ui_texts() # Actualizar textos al inicio
-
+        self.refresh_ui_texts()
 
     def refresh_ui_texts(self):
         """
@@ -40,7 +48,7 @@ class App:
         self.view.filemenu.entryconfig(0, label=_("menu.spanish"))
         self.view.filemenu.entryconfig(1, label=_("menu.english"))
 
-        #helpmenu.entryconfig(0, label=_("menu.user_guide"))
+        # helpmenu.entryconfig(0, label=_("menu.user_guide"))
         self.view.helpmenu.entryconfig(0, label=_("menu.support"))
         self.view.helpmenu.entryconfig(1, label=_("menu.feedback"))
         self.view.helpmenu.entryconfig(3, label=_("menu.check_updates"))
@@ -67,13 +75,14 @@ class App:
         self.view.search_goto_label.config(text=_("search.goto_label"))
 
         self.view.consent_tree.heading("datetime", text=_("consent.datetime"))
-        self.view.consent_tree.heading("ad_storage", text=_("consent.ad_storage"))
+        self.view.consent_tree.heading(
+            "ad_storage", text=_("consent.ad_storage"))
         self.view.consent_tree.heading("analytics_storage",
-                            text=_("consent.analytics_storage"))
-        self.view.consent_tree.heading("ad_user_data", text=_("consent.ad_user_data"))
+                                       text=_("consent.analytics_storage"))
+        self.view.consent_tree.heading(
+            "ad_user_data", text=_("consent.ad_user_data"))
         self.view.consent_tree.heading("ad_personalization",
-                            text=_("consent.ad_personalization"))
-
+                                       text=_("consent.ad_personalization"))
 
     def on_language_change(self, new_lang):
         """
@@ -85,14 +94,12 @@ class App:
         self.config_data["language"] = new_lang
         save_config(self.config_data)
 
-
     def handle_adb_error(self, error_type):
         """Function that will be called by the LogcatManager in case of error."""
         if error_type == AdbError.MULTIPLE_DEVICES:
             messagebox.showerror(_("error.several_devices_title"),
-                                _("error.several_devices_description"))
-        self.stop_logging() # Detenemos el log desde el hilo principal de la UI
-    
+                                 _("error.several_devices_description"))
+        self.stop_logging()  # Detenemos el log desde el hilo principal de la UI
 
     def check_log_queue(self):
         """Processes log lines from the queue and updates UI accordingly."""
@@ -114,7 +121,8 @@ class App:
                 up = parse_user_property_line(line)
                 if up:
                     self.model.user_properties[up["name"]] = up["value"]
-                    self.view.refresh_user_props_tree(self.model.user_properties)
+                    self.view.refresh_user_props_tree(
+                        self.model.user_properties)
 
             # 4) “Setting storage consent” / “Setting DMA consent”
             if ("Setting storage consent" in line) or ("Setting DMA consent" in line) or ("non_personalized_ads" in line):
@@ -125,12 +133,12 @@ class App:
                     # We update the current status
                     self.model.current_consent.update(c)
                     # Instructs the view to update and receives the result
-                    new_item_id = self.view.insert_consent_in_tree(c, self.model.consent_entries)
+                    new_item_id = self.view.insert_consent_in_tree(
+                        c, self.model.consent_entries)
                     # Update the model with the result
                     self.model.consent_entries[c["datetime"]] = new_item_id
 
         self.root.after(100, self.check_log_queue)
-
 
     def show_adb_install_dialog(self):
         """
@@ -161,11 +169,9 @@ class App:
         )
         close_button.pack(pady=10)
 
-
     # -----------------------------------------------------
     # Check Connected Devices
     # -----------------------------------------------------
-
 
     def show_no_device_dialog(self):
         """
@@ -177,41 +183,42 @@ class App:
         msg_label = tk.Label(
             dialog,
             text=_("error.no_connected_device")
-            
+
         )
         msg_label.pack(pady=10, padx=10)
 
-        close_button = tk.Button(dialog, text=_("close"), command=dialog.destroy)
+        close_button = tk.Button(dialog, text=_(
+            "close"), command=dialog.destroy)
         close_button.pack(pady=10)
 
         # Avoid using the main window while it is open.
         dialog.grab_set()
         dialog.focus_set()
 
-
     # -----------------------------------------------------
     # Start/Stop Logging and Clear All
     # -----------------------------------------------------
+
     def start_logging(self):
         """Initializes ADB logging, starts reading threads, and prepares UI."""
-        # We check if ADB is installed
+        # Check if ADB is installed
         if not check_adb_installed():
             self.show_adb_install_dialog()
             return
 
-        # We check if there is at least one device/emulator
+        # Check if there is at least one device/emulator
         if not check_device_connected():
             self.show_no_device_dialog()
             return
 
-        # We create and start the manager
-        self.logcat_manager = LogcatManager(self.model.log_queue, self.handle_adb_error)
+        # Create and start the manager
+        self.logcat_manager = LogcatManager(
+            self.model.log_queue, self.handle_adb_error)
         self.logcat_manager.start()
 
-        # We start the loop that processes the queue
+        # Start the loop that processes the queue
         self.check_log_queue()
         self.view.update_console("\n--- Start log ---\n")
-
 
     def stop_logging(self):
         """Terminates the logcat process and stops logging thread."""
@@ -220,16 +227,15 @@ class App:
             self.logcat_manager = None
         self.view.update_console("\n--- Stop log ---\n")
 
-
     def clear_all(self):
         """Clears console, events, user properties, and consent data from the UI."""
         self.model.clear_data()
         self.view.clear_ui()
 
-
     # -----------------------------------------------------
     # Search Functionality in Log Text Area
     # -----------------------------------------------------
+
     def search_logs(self):
         """Highlights all matches of the search term in the log output area."""
         self.view.text_area.tag_remove("search_highlight", "1.0", tk.END)
@@ -253,7 +259,7 @@ class App:
             start_pos = end_pos
 
         self.view.text_area.tag_config("search_highlight",
-                            background="yellow", foreground="black")
+                                       background="yellow", foreground="black")
 
         total = len(self.model.search_matches)
         if total > 0:
@@ -262,12 +268,11 @@ class App:
         else:
             self.update_match_label(0, 0)
 
-
     def highlight_current_match(self):
         """Highlights the currently selected match in the text area."""
         self.view.text_area.tag_remove("search_current", "1.0", tk.END)
         total = len(self.model.search_matches)
-        
+
         if not (0 <= self.model.current_match_index < total):
             self.update_match_label(0, total)
             return
@@ -279,13 +284,11 @@ class App:
         self.view.text_area.see(start_pos)
         self.update_match_label(self.model.current_match_index + 1, total)
 
-
     def next_match(self):
         """Moves selection to the next search match."""
         if self.model.search_matches and self.model.current_match_index < len(self.model.search_matches) - 1:
             self.model.current_match_index += 1
             self.highlight_current_match()
-
 
     def prev_match(self):
         """Moves selection to the previous search match."""
@@ -293,20 +296,17 @@ class App:
             self.model.current_match_index -= 1
             self.highlight_current_match()
 
-
     def jump_to_first(self):
         """Jumps to the first search match."""
         if self.model.search_matches:
             self.model.current_match_index = 0
             self.highlight_current_match()
 
-
     def jump_to_last(self):
         """Jumps to the last search match."""
         if self.model.search_matches:
             self.model.current_match_index = len(self.model.search_matches) - 1
             self.highlight_current_match()
-
 
     def jump_to_index(self):
         """Jumps to a specific search match index provided by the user."""
@@ -320,7 +320,6 @@ class App:
         self.model.current_match_index = idx
         self.highlight_current_match()
 
-
     def update_match_label(self, current, total):
         """Updates the label showing the current match index out of total."""
         self.view.match_label.config(text=f"{current} / {total}")
@@ -328,7 +327,7 @@ class App:
 
 if __name__ == "__main__":
     load_translations()
-    
+
     root = tk.Tk()
     app = App(root)
     root.mainloop()

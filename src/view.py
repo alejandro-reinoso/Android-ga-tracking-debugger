@@ -1,3 +1,9 @@
+# Android GA Tracking Debugger
+# Copyright (c) 2025 Alejandro Reinoso
+#
+# This software is licensed under the Custom Shared-Profit License (CSPL) v1.0.
+# See the LICENSE.txt file for details.
+
 import tkinter as tk
 from tkinter import scrolledtext, ttk, Menu
 import webbrowser
@@ -18,22 +24,21 @@ class View:
 
         self.filemenu = Menu(self.menubar, tearoff=0)
         self.filemenu.add_command(label=_("menu.spanish"),
-                            command=lambda: self.controller.on_language_change("es"))
+                                  command=lambda: self.controller.on_language_change("es"))
         self.filemenu.add_command(label=_("menu.english"),
-                            command=lambda: self.controller.on_language_change("en"))
+                                  command=lambda: self.controller.on_language_change("en"))
 
         self.helpmenu = Menu(self.menubar, tearoff=0)
         self.helpmenu.add_command(label=_("menu.support"),
-                            command=lambda: webbrowser.open("https://alejandroreinoso.com/contacto/?utm_source=ga_android_debugger&utm_medium=ga_android_debugger&utm_term=support"))
+                                  command=lambda: webbrowser.open("https://alejandroreinoso.com/contacto/?utm_source=ga_android_debugger&utm_medium=ga_android_debugger&utm_term=support"))
         self.helpmenu.add_command(label=_("menu.feedback"),
-                            command=lambda: webbrowser.open("https://alejandroreinoso.com/contacto/?utm_source=ga_android_debugger&utm_medium=ga_android_debugger&utm_term=feedback"))
+                                  command=lambda: webbrowser.open("https://alejandroreinoso.com/contacto/?utm_source=ga_android_debugger&utm_medium=ga_android_debugger&utm_term=feedback"))
         self.helpmenu.add_separator()
         self.helpmenu.add_command(label=_("menu.about_me"),
-                            command=lambda: webbrowser.open("https://www.linkedin.com/in/alejandroreinosogomez/"))
+                                  command=lambda: webbrowser.open("https://www.linkedin.com/in/alejandroreinosogomez/"))
 
         self.menubar.add_cascade(label=_("menu.languages"), menu=self.filemenu)
         self.menubar.add_cascade(label=_("menu.help"), menu=self.helpmenu)
-
 
         # LEFT FRAME: for “Start Log”, “Stop Log”, “Clear All”
         top_frame = tk.Frame(main_paned, bd=2, relief="groove")
@@ -60,25 +65,29 @@ class View:
         left_frame = tk.Frame(middle_frame, bg="white")
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self.user_props_title = tk.Label(left_frame, text=_("user_props.title"), bg="white")
+        self.user_props_title = tk.Label(
+            left_frame, text=_("user_props.title"), bg="white")
         self.user_props_title.pack(anchor="w")
         self.user_props_tree = ttk.Treeview(left_frame)
         self.user_props_tree.pack(fill=tk.BOTH, expand=True)
 
-        self.consent_title = tk.Label(left_frame, text=_("consent.title"), bg="white")
+        self.consent_title = tk.Label(
+            left_frame, text=_("consent.title"), bg="white")
         self.consent_title.pack(anchor="w")
         self.consent_tree = ttk.Treeview(
             left_frame,
             columns=("datetime", "ad_storage", "analytics_storage",
-                    "ad_user_data", "ad_personalization"),
+                     "ad_user_data", "ad_personalization"),
             show="headings"
         )
         self.consent_tree.pack(fill=tk.BOTH, expand=True)
         self.consent_tree.heading("datetime", text="DateTime")
         self.consent_tree.heading("ad_storage", text="ad_storage")
-        self.consent_tree.heading("analytics_storage", text="analytics_storage")
+        self.consent_tree.heading(
+            "analytics_storage", text="analytics_storage")
         self.consent_tree.heading("ad_user_data", text="ad_user_data")
-        self.consent_tree.heading("ad_personalization", text="ad_personalization")
+        self.consent_tree.heading(
+            "ad_personalization", text="ad_personalization")
 
         self.consent_tree.column("datetime", width=130)
         self.consent_tree.column("ad_storage", width=90)
@@ -89,12 +98,13 @@ class View:
         right_frame = tk.Frame(middle_frame, bg="white")
         right_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self.events_title = tk.Label(right_frame, text=_("events.title"), bg="white")
+        self.events_title = tk.Label(
+            right_frame, text=_("events.title"), bg="white")
         self.events_title.pack(anchor="w")
         self.events_tree = ttk.Treeview(right_frame)
         self.events_tree.pack(fill=tk.BOTH, expand=True)
 
-        # --- LOWER FRAME -> consola + búsqueda
+        # --- LOWER FRAME -> console + search
         bottom_frame = tk.Frame(main_paned, bd=2, relief="sunken")
         main_paned.add(bottom_frame, minsize=50)
 
@@ -110,22 +120,27 @@ class View:
             "search.button"), command=self.controller.search_logs)
         self.search_button.pack(side=tk.LEFT, padx=5)
 
-        self.first_button = tk.Button(frame_search, text="|<<", command=self.controller.jump_to_first)
+        self.first_button = tk.Button(
+            frame_search, text="|<<", command=self.controller.jump_to_first)
         self.first_button.pack(side=tk.LEFT, padx=2)
 
-        self.prev_button = tk.Button(frame_search, text="<<", command=self.controller.prev_match)
+        self.prev_button = tk.Button(
+            frame_search, text="<<", command=self.controller.prev_match)
         self.prev_button.pack(side=tk.LEFT, padx=2)
 
         self.match_label = tk.Label(frame_search, text="0 / 0")
         self.match_label.pack(side=tk.LEFT, padx=10)
 
-        self.next_button = tk.Button(frame_search, text=">>", command=self.controller.next_match)
+        self.next_button = tk.Button(
+            frame_search, text=">>", command=self.controller.next_match)
         self.next_button.pack(side=tk.LEFT, padx=2)
 
-        self.last_button = tk.Button(frame_search, text=">>|", command=self.controller.jump_to_last)
+        self.last_button = tk.Button(
+            frame_search, text=">>|", command=self.controller.jump_to_last)
         self.last_button.pack(side=tk.LEFT, padx=2)
 
-        self.search_goto_label = tk.Label(frame_search, text=_("search.goto_label"))
+        self.search_goto_label = tk.Label(
+            frame_search, text=_("search.goto_label"))
         self.search_goto_label.pack(side=tk.LEFT, padx=5)
         self.index_entry = tk.Entry(frame_search, width=5)
         self.index_entry.pack(side=tk.LEFT)
@@ -133,22 +148,20 @@ class View:
             "search.goto_button"), command=self.controller.jump_to_index)
         self.jump_button.pack(side=tk.LEFT, padx=5)
 
-        self.text_area = scrolledtext.ScrolledText(bottom_frame, width=100, height=10)
+        self.text_area = scrolledtext.ScrolledText(
+            bottom_frame, width=100, height=10)
         self.text_area.pack(padx=5, pady=5, fill=tk.BOTH, expand=True)
-
 
     def update_console(self, text):
         '''
         Insert text in the console
         '''
         self.text_area.insert(tk.END, text)
-        self.text_area.see(tk.END) # automatic scroll
-
+        self.text_area.see(tk.END)  # automatic scroll
 
     # -----------------------------------------------------
     # Insert Data Into UI Treeviews
     # -----------------------------------------------------
-
 
     def insert_event_in_tree(self, ev):
         """Inserts an event into the events tree view in the UI."""
@@ -175,21 +188,20 @@ class View:
         )
         if dt in consent_entries_from_model:
             self.consent_tree.delete(consent_entries_from_model[dt])
-        
+
         new_item = self.consent_tree.insert("", tk.END, values=values)
         return new_item
 
-    
     def refresh_user_props_tree(self, user_properties_from_model):
         """Refreshes the user properties display in the UI."""
         for item in self.user_props_tree.get_children():
             self.user_props_tree.delete(item)
         for prop_name, prop_val in user_properties_from_model.items():
-            self.user_props_tree.insert("", tk.END, text=f"{prop_name} = {prop_val}")
-
+            self.user_props_tree.insert(
+                "", tk.END, text=f"{prop_name} = {prop_val}")
 
     def clear_ui(self):
-        """Limpia todos los widgets que muestran datos de sesión."""
+        """Clears all widgets that display session data."""
         self.text_area.delete("1.0", tk.END)
         for tree in [self.events_tree, self.user_props_tree, self.consent_tree]:
             for item in tree.get_children():

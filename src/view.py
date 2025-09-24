@@ -136,9 +136,61 @@ class View:
         self.text_area = scrolledtext.ScrolledText(bottom_frame, width=100, height=10)
         self.text_area.pack(padx=5, pady=5, fill=tk.BOTH, expand=True)
 
+
     def update_console(self, text):
         '''
         Insert text in the console
         '''
         self.text_area.insert(tk.END, text)
         self.text_area.see(tk.END) # automatic scroll
+
+
+    # -----------------------------------------------------
+    # Insert Data Into UI Treeviews
+    # -----------------------------------------------------
+
+
+    def insert_event_in_tree(self, ev):
+        """Inserts an event into the events tree view in the UI."""
+        dt = ev["datetime"]
+        name = ev["name"]
+        params = ev["params"]
+
+        parent_id = self.events_tree.insert("", tk.END, text=f"{dt} - {name}")
+        for k, v in params.items():
+            self.events_tree.insert(parent_id, tk.END, text=f"{k} = {v}")
+
+    def insert_consent_in_tree(self, cdict, consent_entries_from_model):
+        """
+        cdict => {datetime, ad_storage, analytics_storage, ad_user_data, ad_personalization}
+        If there is already a row with the same datetime => we delete it and reinsert it
+        """
+        dt = cdict["datetime"]
+        values = (
+            dt,
+            cdict.get("ad_storage", ""),
+            cdict.get("analytics_storage", ""),
+            cdict.get("ad_user_data", ""),
+            cdict.get("ad_personalization", "")
+        )
+        if dt in consent_entries_from_model:
+            self.consent_tree.delete(consent_entries_from_model[dt])
+        
+        new_item = self.consent_tree.insert("", tk.END, values=values)
+        return new_item
+
+    
+    def refresh_user_props_tree(self, user_properties_from_model):
+        """Refreshes the user properties display in the UI."""
+        for item in self.user_props_tree.get_children():
+            self.user_props_tree.delete(item)
+        for prop_name, prop_val in user_properties_from_model.items():
+            self.user_props_tree.insert("", tk.END, text=f"{prop_name} = {prop_val}")
+
+
+    def clear_ui(self):
+        """Limpia todos los widgets que muestran datos de sesión."""
+        self.text_area.delete("1.0", tk.END)
+        for tree in [self.events_tree, self.user_props_tree, self.consent_tree]:
+            for item in tree.get_children():
+                tree.delete(item)

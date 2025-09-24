@@ -71,7 +71,7 @@ adb version
 ## 🚀 Ejecutar
 
 ```bash
-python analytics-debuger.py
+python main.py
 ```
 
 El programa verificará:
@@ -89,9 +89,29 @@ Puedes cambiar entre español e inglés desde el menú `Languages`.
 
 ## 📂 Estructura del proyecto
 
-- `analytics-debuger.py`: script principal
-- `locales.json`: traducciones (opcional)
-- `config.json`: configuración generada automáticamente
+El proyecto sigue una arquitectura Modelo-Vista-Controlador (MVC) para asegurar una clara separación de responsabilidades.
+
+- main.py: Punto de entrada principal de la aplicación. Inicializa y ejecuta el Controlador.
+
+- src/: Contiene el código fuente principal.
+
+  - model.py: El Modelo, que gestiona el estado y la lógica de datos de la aplicación.
+
+  - view.py: La Vista, que construye y gestiona la interfaz gráfica (GUI) con Tkinter.
+
+  - adb_manager.py: Módulo dedicado a gestionar toda la comunicación con ADB.
+
+  - log_parser.py: Se encarga de procesar las líneas de logcat.
+
+  - config_manager.py: Gestiona la configuración del usuario.
+
+  - i18n.py: Gestiona la internacionalización (traducciones).
+
+- assets/: Contiene archivos estáticos como iconos e imágenes.
+
+- locales.json: Almacena las cadenas de texto para el soporte multilenguaje.
+
+- config.json: Guarda la configuración del usuario, como el idioma seleccionado.
 
 ---
 

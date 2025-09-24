@@ -16,7 +16,7 @@ subject to the following conditions:
    Commercial use of this Software is permitted only under the condition that
    50% of any **gross revenue** or **benefit** obtained from the use, distribution,
    sublicensing, or sale of the Software or any derivative works is shared with
-   the original author, **Alejandro Reinoso**.
+   the original author, **Alejandro Reinoso Gómez**.
 
    Revenue sharing must occur within 30 days of revenue generation and be
    accompanied by a report of use. Contact: https://alejandroreinoso.com/contacto

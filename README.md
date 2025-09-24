@@ -77,10 +77,10 @@ adb version
 ## 🚀 Run the App
 
 ```bash
-python analytics-debuger.py
+python main.py
 ```
 
-It will auto-check:
+The program will auto-check:
 
 - If ADB is installed
 - If an Android device/emulator is connected
@@ -95,9 +95,31 @@ You can switch between English and Spanish in the `Languages` menu.
 
 ## 📂 Project Structure
 
-- `analytics-debuger.py`: main application
-- `locales.json`: translation file (optional)
-- `config.json`: auto-generated config file
+The project follows a Model-View-Controller (MVC) architecture to ensure a clear separation of concerns.
+
+- main.py: The main entry point of the application. It initializes and runs the Controller.
+
+- src/: Contains the core source code.
+
+  - model.py: The Model, which manages the application's state and data logic.
+
+  - view.py: The View, which builds and manages the Tkinter GUI.
+
+  - adb_manager.py: A dedicated module to handle all communications with ADB.
+
+  - log_parser.py: Handles the parsing of logcat lines.
+
+  - config_manager.py: Manages user configuration.
+
+  - i18n.py: Handles internationalization (translations).
+
+- assets/: Contains static files like icons and images.
+
+- locales.json: Stores the translation strings for multi-language support.
+
+- config.json: Stores the user's configuration, such as the selected language.
+
+
 
 ---
 

@@ -78,8 +78,6 @@ class LogcatManager:
          """Reads lines from logcat stdout and pushes them into a queue"""
          while not self.stop_event.is_set() and self.logcat_process.poll() is None:
             line = self.logcat_process.stdout.readline()
-            if not line:
-                break
             self.log_queue.put(line.rstrip('\n'))
 
     def _read_stderr(self):

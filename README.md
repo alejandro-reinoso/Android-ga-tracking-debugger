@@ -30,8 +30,8 @@ A desktop tool that lets you inspect Firebase/Google Analytics logs from connect
 ### 1. Clone or download this repo
 
 ```bash
-git clone https://github.com/youruser/ga-debugger.git
-cd ga-debugger
+git clone https://github.com/alejandro-reinoso/Android-ga-tracking-debugger.git
+cd Android-ga-tracking-debugger
 ```
 
 ### 2. Install Python dependencies

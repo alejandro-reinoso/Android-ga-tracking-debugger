@@ -30,8 +30,8 @@ Una herramienta de escritorio para inspeccionar logs de Firebase/Google Analytic
 ### 1. Clonar o descargar el repositorio
 
 ```bash
-git clone https://github.com/tuusuario/ga-debugger.git
-cd ga-debugger
+git clone https://github.com/alejandro-reinoso/Android-ga-tracking-debugger.git
+cd Android-ga-tracking-debugger
 ```
 
 ### 2. Instalar dependencias de Python

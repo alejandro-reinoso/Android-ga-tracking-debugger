@@ -126,7 +126,7 @@ class LogcatManager:
         return True
 
     def stop(self):
-        """Detiene los hilos y el proceso logcat."""
+        """Stops the threads and the logcat process."""
         if self.logcat_process and self.logcat_process.poll() is None:
             self.stop_event.set()
             self.logcat_process.terminate()

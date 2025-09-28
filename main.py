@@ -4,6 +4,8 @@
 # This software is licensed under the Custom Shared-Profit License (CSPL) v1.0.
 # See the LICENSE.txt file for details.
 
+__version__ = "1.0.0" # <-- AÑADE ESTO
+
 import tkinter as tk
 from tkinter import messagebox
 import webbrowser
@@ -20,7 +22,7 @@ class App:
     def __init__(self, root):
         self.root = root
         self.root.title(
-            "Analytics Tracking Debugger Android (Alejandro Reinoso)")
+            f"Analytics Tracking Debugger Android (Alejandro Reinoso) - v{__version__}")
         self.root.iconbitmap(resource_path(
             "./assets/logo-alejandro-reinoso.ico"))
 
@@ -123,22 +125,38 @@ class App:
                     self.model.user_properties[up["name"]] = up["value"]
                     self.view.refresh_user_props_tree(
                         self.model.user_properties)
+                    
+                    if "non_personalized_ads" in up["name"]:
+                        # Creamos un nuevo estado de consentimiento basado en el actual
+                        new_consent_state = self.model.current_consent.copy()
+                        new_consent_state["datetime"] = up["datetime"]
+
+                        # Re-calculamos el valor de ad_personalization
+                        self.model.deduce_ad_personalization(new_consent_state)
+
+                        self._update_consent_view_if_changed(new_consent_state)
 
             # 4) “Setting storage consent” / “Setting DMA consent”
-            if ("Setting storage consent" in line) or ("Setting DMA consent" in line) or ("non_personalized_ads" in line):
+            if ("Setting storage consent" in line) or \
+                ("Setting DMA consent" in line) or \
+                ("Setting consent" in line):
                 c = parse_consent_line(line)
                 if c:
                     self.model.fill_missing_consent_fields(c)
                     self.model.deduce_ad_personalization(c)
-                    # We update the current status
-                    self.model.current_consent.update(c)
-                    # Instructs the view to update and receives the result
-                    new_item_id = self.view.insert_consent_in_tree(
-                        c, self.model.consent_entries)
-                    # Update the model with the result
-                    self.model.consent_entries[c["datetime"]] = new_item_id
+                    # Check if consent has actually changed before updating the UI and model state
+                    self._update_consent_view_if_changed(c)
 
         self.root.after(100, self.check_log_queue)
+
+    def _update_consent_view_if_changed(self, consent_data):
+        """Checks for consent changes and updates the model and view accordingly."""
+        if self.model.has_consent_changed(consent_data):
+            # If it has changed, update everything: model and view
+            self.model.current_consent.update(consent_data)
+            new_item_id = self.view.insert_consent_in_tree(
+                consent_data, self.model.consent_entries)
+            self.model.consent_entries[consent_data["datetime"]] = new_item_id
 
     def show_adb_install_dialog(self):
         """

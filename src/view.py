@@ -65,22 +65,38 @@ class View:
         left_frame = tk.Frame(middle_frame, bg="white")
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
+        # User Properties Tree
         self.user_props_title = tk.Label(
             left_frame, text=_("user_props.title"), bg="white")
-        self.user_props_title.pack(anchor="w")
-        self.user_props_tree = ttk.Treeview(left_frame)
-        self.user_props_tree.pack(fill=tk.BOTH, expand=True)
+        self.user_props_title.pack(anchor="w", pady=(0, 2))
+        
+        up_container = tk.Frame(left_frame)
+        up_container.pack(fill=tk.BOTH, expand=True)
+        up_scrollbar = ttk.Scrollbar(up_container, orient=tk.VERTICAL)
+        self.user_props_tree = ttk.Treeview(up_container, yscrollcommand=up_scrollbar.set)
+        up_scrollbar.config(command=self.user_props_tree.yview)
+        up_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.user_props_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
+        # Consent Tree
         self.consent_title = tk.Label(
             left_frame, text=_("consent.title"), bg="white")
-        self.consent_title.pack(anchor="w")
+        self.consent_title.pack(anchor="w", pady=(5, 2))
+
+        consent_container = tk.Frame(left_frame)
+        consent_container.pack(fill=tk.BOTH, expand=True)
+        consent_scrollbar = ttk.Scrollbar(consent_container, orient=tk.VERTICAL)
         self.consent_tree = ttk.Treeview(
-            left_frame,
+            consent_container,
             columns=("datetime", "ad_storage", "analytics_storage",
                      "ad_user_data", "ad_personalization"),
-            show="headings"
+            show="headings",
+            yscrollcommand=consent_scrollbar.set
         )
-        self.consent_tree.pack(fill=tk.BOTH, expand=True)
+        consent_scrollbar.config(command=self.consent_tree.yview)
+        consent_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.consent_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
         self.consent_tree.heading("datetime", text="DateTime")
         self.consent_tree.heading("ad_storage", text="ad_storage")
         self.consent_tree.heading(
@@ -98,11 +114,21 @@ class View:
         right_frame = tk.Frame(middle_frame, bg="white")
         right_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
+        # Events Tree
         self.events_title = tk.Label(
             right_frame, text=_("events.title"), bg="white")
         self.events_title.pack(anchor="w")
-        self.events_tree = ttk.Treeview(right_frame)
-        self.events_tree.pack(fill=tk.BOTH, expand=True)
+
+        events_container = tk.Frame(right_frame)
+        events_container.pack(fill=tk.BOTH, expand=True)
+        events_scrollbar = ttk.Scrollbar(events_container, orient=tk.VERTICAL)
+
+        self.events_tree = ttk.Treeview(events_container, yscrollcommand=events_scrollbar.set)
+
+        events_scrollbar.config(command=self.events_tree.yview)
+        events_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.events_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         # --- LOWER FRAME -> console + search
         bottom_frame = tk.Frame(main_paned, bd=2, relief="sunken")
@@ -173,6 +199,8 @@ class View:
         for k, v in params.items():
             self.events_tree.insert(parent_id, tk.END, text=f"{k} = {v}")
 
+        self.events_tree.see(parent_id)
+
     def insert_consent_in_tree(self, cdict, consent_entries_from_model):
         """
         cdict => {datetime, ad_storage, analytics_storage, ad_user_data, ad_personalization}
@@ -190,6 +218,8 @@ class View:
             self.consent_tree.delete(consent_entries_from_model[dt])
 
         new_item = self.consent_tree.insert("", tk.END, values=values)
+        self.consent_tree.see(new_item)
+
         return new_item
 
     def refresh_user_props_tree(self, user_properties_from_model):
@@ -199,6 +229,11 @@ class View:
         for prop_name, prop_val in user_properties_from_model.items():
             self.user_props_tree.insert(
                 "", tk.END, text=f"{prop_name} = {prop_val}")
+            
+        # Scroll until the last item
+        children = self.user_props_tree.get_children()
+        if children:
+            self.user_props_tree.see(children[-1])
 
     def clear_ui(self):
         """Clears all widgets that display session data."""

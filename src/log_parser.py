@@ -34,6 +34,7 @@ def parse_logging_event_line(line):
 
 def parse_user_property_line(line):
     """Parses a line for user property settings."""
+    datetime_str = line[:18].strip()
     pat = r"Setting user property:\s+([^,]+),\s+(.*)"
     m = re.search(pat, line)
     if not m:
@@ -43,6 +44,7 @@ def parse_user_property_line(line):
             return None
 
     return {
+        "datetime": datetime_str,
         "name": m.group(1).strip(),
         "value": m.group(2).strip()
     }
@@ -60,8 +62,9 @@ def parse_consent_line(line):
         "ad_personalization": None,
     }
     for (k, v) in found:
-        if k in cdict:  # ad_storage, analytics_storage, ad_user_data, ad_personalization
-            cdict[k] = v
+        key_lower = k.lower()
+        if key_lower in cdict:  # ad_storage, analytics_storage, ad_user_data, ad_personalization
+            cdict[key_lower] = v
 
     if (cdict["ad_storage"] is None
         and cdict["analytics_storage"] is None
